@@ -1,98 +1,236 @@
-# Kasa.Edge: Passive Urban-Waste Sensing & Civic-Triage System
+<p align="center">
+  <img src="https://img.shields.io/badge/Civic_OS-2.4-00f5a0?style=for-the-badge&logoColor=black" alt="Civic OS" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Gemini_1.5_Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white" alt="Gemini" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white" alt="Leaflet" />
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License" />
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge" alt="PRs Welcome" />
+</p>
 
-> *"Don't force citizens to report garbage. Let the city observe itself."*
+<h1 align="center">🌿 KASA.EDGE</h1>
+<h3 align="center">Passive Urban-Waste Sensing & Autonomous Civic-Triage Platform</h3>
+
+<p align="center">
+  <em>"Don't force citizens to report garbage. Let the city observe itself."</em>
+</p>
+
+<p align="center">
+  <b>Transforming gig-economy delivery fleets into a decentralized, real-time civic observation mesh for the Greater Bengaluru Authority (BBMP / GBA).</b>
+</p>
+
+<p align="center">
+  <a href="#-the-paradigm-shift">Problem & Solution</a> •
+  <a href="#-system-architecture">Architecture</a> •
+  <a href="#-5-stage-pipeline">5-Stage Pipeline</a> •
+  <a href="#-two-tiered-verification-matrix">Triage Matrix</a> •
+  <a href="#-interactive-dashboard--simulator">Simulator Guide</a> •
+  <a href="#-quickstart-in-60-seconds">Quickstart</a> •
+  <a href="#-api-reference">API Reference</a>
+</p>
 
 ---
 
-## 📌 Executive Summary
+## 💡 The Paradigm Shift
 
-Traditional civic grievance platforms (such as Sahaaya) rely on **active citizen reporting**, creating significant friction (stopping, photographing, geotagging, submitting), duplicate complaints, and coverage blind spots in neglected wards.
+Traditional civic grievance portals (**Sahaaya, CPGRAMS**) fail because they rely on **active citizen reporting**:
+- 🛑 **Friction**: Citizens must stop, take photos, write descriptions, and tag coordinates.
+- 🔁 **Duplicates**: 50 people complain about the same pile on 100 Feet Road, clogging call centers.
+- 🌫️ **Coverage Blindspots**: Wealthier wards file hundreds of tickets; underserved neighborhoods remain invisible.
 
-**Kasa.Edge** turns existing gig-economy vehicle fleets (delivery riders, couriers, cabs) into a **passive urban sensing network**. Vehicle-mounted dashcams continuously scan the road curb in the background without requiring any rider interaction.
+```
+[ Traditional Model ] Citizen Discovers ➔ Stops & Snaps ➔ Geotags ➔ Submits Form ➔ Manual Triage (Days)
+[ Kasa.Edge Model   ] Vehicle Passes ➔ Edge AI Detects ➔ Cloud VLM Corroborates ➔ Auto-Dispatched (< 30 Mins)
+```
+
+**Kasa.Edge** turns existing municipal and gig-economy vehicles (delivery riders, couriers, auto-rickshaws, cabs) into a **continuous, passive urban sensing mesh** that operates seamlessly in the background without driver intervention.
 
 ---
 
-## 🏗️ 5-Stage System Architecture
+## 🏗️ System Architecture
 
-```text
-[1. Fleet Camera Stream]
-         │ (Continuous video strictly stays in memory on-device)
-         ▼
-[2. Edge Detector & Privacy Filter]
-         │ (Face & license plate anonymization; crops ≤ 150 KB)
-         ▼
-[3. Cloud VLM Verifier (Gemini)]
-         │ (Extracts structured JSON: category, extent, path blockage)
-         ▼
-[4. Spatial Engine (30m Haversine)]
-         │ (Correlates multi-pass observations into spatial Incident clusters)
-         ▼
-[5. Deterministic Policy & Civic Triage Engine]
-         │ (Requires ≥ 2 independent vehicle passes before ticketing)
-         ▼
-[Greater Bengaluru Authority / BBMP Sahaaya 2.0 Dispatch]
+```mermaid
+flowchart TD
+    subgraph Fleet ["🛵 1. On-Device Fleet Mesh"]
+        A[Dashcam Video Feed] -->|In-Memory Buffer| B[Edge Object Detection]
+        B --> C{Potential Waste?}
+        C -->|No| D[Auto-Purged from RAM]
+        C -->|Yes| E[On-Device Privacy Engine]
+        E -->|Anonymize Faces & Plates| F[Candidate Patch <= 150KB]
+    end
+
+    subgraph Cloud ["☁️ 2. Cloud Intelligence & Verification"]
+        F --> G[Gemini 1.5 Flash VLM]
+        G --> H{Semantic Classification}
+        H -->|Stray Animal / False Pos| I[AUTO REJECT]
+        H -->|C&D Rubble| J[HUMAN REVIEW / Tipper Queue]
+        H -->|Civic Waste / Bin| K[30m Haversine Clustering]
+    end
+
+    subgraph Spatial ["🛰️ 3. Spatial Corroboration Engine"]
+        K --> L{Independent Passes >= 2?}
+        L -->|Only 1 Pass| M[PENDING CORROBORATION]
+        L -->|>= 2 Independent Fleet Passes| N[CONFIRMED INCIDENT]
+        N --> O{Historical Relapses >= 2?}
+        O -->|Yes| P[Flagged CHRONIC BLACKSPOT]
+        O -->|No| Q[Active Waste Cluster]
+    end
+
+    subgraph Municipal ["🏛️ 4. Municipal Dispatch"]
+        N --> R[Generate Civic Ticket: GBA-SHY-2026-XXXX]
+        R --> S[BBMP Ward 154 Compactor Routing]
+        P --> T[Surveillance & Fencing Order]
+    end
+
+    style Fleet fill:#0d1117,stroke:#30363d,stroke-width:1px,color:#fff
+    style Cloud fill:#0e1726,stroke:#1e293b,stroke-width:1px,color:#fff
+    style Spatial fill:#062822,stroke:#00f5a0,stroke-width:1px,color:#fff
+    style Municipal fill:#1c1427,stroke:#8b5cf6,stroke-width:1px,color:#fff
 ```
 
 ---
 
-## 📊 Data Abstraction Hierarchy
+## ⚡ Key System Capabilities
 
-1. **Observation**: A single camera pass crop captured by a vehicle (`OBS-XXXX`). Contains timestamp, vehicle ID, GPS, and edge detection score.
-2. **Incident**: A geographic cluster of observations within a **30-meter Haversine radius** (`INC-XXXX`).
-3. **Blackspot**: An incident site showing a verified relapse history ($\ge 2$ recurrences across separate cycles).
-4. **Civic Ticket**: An official, verified evidence package formatted for municipal compactor dispatch (`GBA-SHY-2026-XXXX`).
+| Pillar | Capability | Technical Guarantee |
+| :--- | :--- | :--- |
+| 🔒 **Zero-Stream Privacy** | On-device face and license plate redaction. | Raw continuous video **never leaves the vehicle**; only redacted crops $\le 150\text{ KB}$ are transmitted. |
+| 🛰️ **Spatial Corroboration** | 30-meter Haversine incident clustering. | Eliminates duplicate tickets by aggregating multi-pass observations into single geographical incident clusters. |
+| 🤖 **Multimodal Semantic Triage** | Gemini 1.5 Flash Vision-Language Model. | Differentiates roadside garbage from sleeping animals, foliage, parked carts, and construction rubble. |
+| 🛡️ **Anti-Spurious Dispatch** | Deterministic 2-pass vehicle policy. | Prevents false dispatches by requiring **$\ge 2$ independent vehicles** before triggering official municipal work orders. |
+| 📈 **Blackspot Intelligence** | Chronic recurrence tracking. | Automatically upgrades recurring dump sites ($\ge 2$ clean-and-relapse cycles) into **Monitored Civic Blackspots**. |
 
 ---
 
 ## 🛡️ Two-Tiered Verification & Triage Matrix
 
-| Scene Type | VLM Classification | System Action | Policy Rationale |
-| :--- | :--- | :--- | :--- |
-| **Stray Animal** | `animal` | **REJECT** | Curbside dog/cow is non-waste fauna. Prevents spurious civic complaints. |
-| **C&D Debris** | `construction_debris` | **HUMAN REVIEW** | Construction rubble requires heavy tipper trucks, not regular municipal sweepers. |
-| **Roadside Dump** | `mixed_waste` | **CORROBORATE** | Evaluates persistence score; requires $\ge 2$ independent vehicle passes before dispatch. |
-| **Overflowing Bin** | `overflowing_bin` | **ACCEPT (URGENT)** | Public infrastructure failure requiring immediate scheduled clearance. |
-
----
-
-## 🔒 Privacy Guarantee
-
-* **Zero Continuous Video Streaming**: Video frames never leave the moving vehicle over cellular networks.
-* **Lightweight Candidate Crops**: Only bounded candidate patches ($\le 150\text{ KB}$) are transmitted.
-* **On-Device Anonymization**: Faces and vehicle license plates are masked and blurred on-device prior to transmission. The dashboard includes an interactive toggle allowing inspection of the raw local buffer vs. the anonymized cloud crop.
-
----
-
-## 🚀 Quickstart & Running the Application
-
-### 1. Launch with One Command
-
-```bash
-./run.sh
+```
+       [ Candidate Crop Received ]
+                    │
+            ┌───────┴───────┐
+            │               │
+     [Edge Confidence] [VLM Semantic Analysis]
+            │               │
+            ▼               ▼
+┌───────────────────────┬──────────────┬───────────────────┬──────────────────────────────────────────┐
+│ Scene Classification  │ Category     │ Triage Action     │ Municipal Rationale                      │
+├───────────────────────┼──────────────┼───────────────────┼──────────────────────────────────────────┤
+│ 🐕 Stray Animal       │ animal       │ ❌ REJECT         │ Non-waste fauna; eliminates false alarms │
+│ 🧱 C&D Debris         │ construction │ ⚠️ HUMAN REVIEW  │ Tipper truck required, not sweepers      │
+│ 🗑️ Roadside Garbage   │ mixed_waste  │ ⏳ CORROBORATE    │ Awaits second pass before compactor dispatch│
+│ 📦 Overflowing Bin    │ overflowing  │ 🚨 CONFIRM (URGENT)│ Public container breach; immediate dispatch│
+└───────────────────────┴──────────────┴───────────────────┴──────────────────────────────────────────┘
 ```
 
-Or run manually:
+---
 
+## 🎮 Interactive Dashboard & Simulator
+
+Kasa.Edge includes an interactive, dark-mode civic command center built with **Tailwind CSS**, **Leaflet GIS**, and **Chart.js**.
+
+<div align="center">
+  <kbd>
+    <img src="https://raw.githubusercontent.com/17puskarkartik18-lgtm/kasa-edge/main/static/sample_images/mixed_waste_blurred.jpg" width="48%" alt="Anonymized Sample Crop" />
+    <img src="https://raw.githubusercontent.com/17puskarkartik18-lgtm/kasa-edge/main/static/sample_images/overflowing_bin_blurred.jpg" width="48%" alt="Overflowing Bin Sample" />
+  </kbd>
+</div>
+
+### Built-in 6-Step Fleet Simulation Flow:
+1. **Pass 1 (`Rider R-01`)**: Spots curbside garbage on 100 Feet Road. Status set to `PENDING_CORROBORATION` (awaiting second pass).
+2. **Pass 2 (`Courier R-02`)**: 22 minutes later, independent vehicle passes 10m away. Spatial match confirmed! Upgrades to `CONFIRMED`, persistence reaches 60, and ticket `GBA-SHY-2026-4401` is generated.
+3. **Pass 3 (`Cab R-03`)**: Dashcam captures a sleeping street dog on CMH Road. VLM classifies as `animal` and deterministic policy rejects it (false-positive suppression).
+4. **Pass 4 (`Rider R-01`)**: Detects concrete rubble and cement bags. Routed to `HUMAN_REVIEW` queue for specialized C&D machinery.
+5. **Pass 5 (`Courier R-02`)**: Detects an overflowing commercial bin. Tagged `CONFIRMED` with `URGENT` priority.
+6. **Pass 6 (`Cab R-03`)**: New dump detected at an older cleared site. Spatial engine detects recurrence ($\ge 2$) and flags a **Chronic Relapse Blackspot**!
+
+---
+
+## 🚀 Quickstart in 60 Seconds
+
+### Prerequisites
+- Python 3.9+ installed
+- macOS, Linux, or WSL2
+
+### 1. Clone the Repository
 ```bash
-# Activate environment
-source venv/bin/activate
+git clone https://github.com/17puskarkartik18-lgtm/kasa-edge.git
+cd kasa-edge
+```
 
-# Start backend server
-export PYTHONPATH=.
-uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+### 2. Configure Environment (Optional)
+```bash
+cp .env.example .env
+# Edit .env to add your GEMINI_API_KEY (optional)
+```
+
+### 3. Launch Platform
+```bash
+chmod +x run.sh
+./run.sh
 ```
 
 Open your browser to: **[http://localhost:8000](http://localhost:8000)**
 
 ---
 
-## 🎮 Simulator Walkthrough & Demo Guide
+## 🧪 Testing & Verification
 
-The built-in Fleet Simulator demonstrates the full lifecycle:
+Run the automated API and spatial verification test suite:
 
-1. **Pass 1 (Rider R-01)**: Spots roadside garbage on 100 Feet Road. Status becomes `PENDING_CORROBORATION` (awaiting second pass to prevent spurious tickets).
-2. **Pass 2 (Courier R-02)**: 22 minutes later, independent vehicle R-02 passes 10 meters away. Haversine clustering confirms spatial match! Status upgrades to `CONFIRMED`, persistence score jumps to 60, and ticket `GBA-SHY-2026-XXXX` is issued!
-3. **Pass 3 (Cab R-03)**: Camera triggers on a sleeping street dog. VLM classifies as `animal` and deterministic policy rejects it (proving false-positive elimination).
-4. **Pass 4 (Rider R-01)**: Spots brick rubble and cement bags. Routed to `HUMAN_REVIEW` queue for C&D specialized machinery.
-5. **Pass 5 (Courier R-02)**: Spots an overflowing municipal container. Tagged `CONFIRMED` with `URGENT` priority.
-6. **Pass 6 (Cab R-03)**: Dumps detected at an older cleared site. Spatial engine recognizes $\ge 2$ recurrences and flags a `CHRONIC_RELAPSE Blackspot`!
+```bash
+# Run unit tests
+PYTHONPATH=. python3 -m unittest discover tests
+
+# Or run specific test case
+PYTHONPATH=. python3 -m unittest tests/test_api.py
+```
+
+---
+
+## 📡 API Specification
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/` | Web GIS Command Center Dashboard |
+| `GET` | `/stats` | Aggregated civic KPIs (incidents, tickets, blackspots, vehicles) |
+| `POST` | `/observation` | Ingests on-device candidate patch with GPS, runs VLM & clustering |
+| `GET` | `/incidents` | Lists active spatial incident clusters with multi-vehicle proof |
+| `GET` | `/incidents/{id}` | Detailed incident timeline and corroborating observation passes |
+| `GET` | `/blackspots` | Chronic recurring dump locations requiring enforcement |
+| `GET` | `/tickets` | Dispatched GBA/BBMP compactor work orders |
+| `POST` | `/simulator/step` | Advance the automated fleet simulator by 1 pass |
+| `POST` | `/simulator/run_all`| Execute the complete 6-stage lifecycle simulation |
+| `POST` | `/simulator/reset`| Reset database to pristine demo state |
+| `GET` | `/gazetteer` | Ward 154 arterial corridor breakdown and telemetry |
+
+---
+
+## 📦 Tech Stack
+
+- **Backend & API**: Python 3.9+, [FastAPI](https://fastapi.tiangolo.com/), Uvicorn
+- **Spatial Clustering**: Haversine Spherical Distance Algorithm ($R=6371\text{ km}$)
+- **Vision-Language Model**: Google Gemini 1.5 Flash (with deterministic heuristic fallback)
+- **Frontend & GIS**: HTML5, Vanilla JavaScript, [Tailwind CSS](https://tailwindcss.com/), [Leaflet.js](https://leafletjs.com/), [Chart.js](https://www.chartjs.org/)
+- **Data Persistence**: SQLite 3 with spatial indexing and JSON schema enforcement
+- **Privacy & Image Processing**: OpenCV, Pillow (PIL), NumPy
+
+---
+
+## 🤝 Contributing
+
+Contributions, feedback, and civic tech partnerships are warmly welcomed!
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See [`LICENSE`](file:///Users/kartikpushkar/my-project/LICENSE) for more information.
+
+<p align="center">
+  <b>Built with ❤️ for cleaner, self-sensing cities.</b>
+</p>
