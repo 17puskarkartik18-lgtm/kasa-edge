@@ -4,6 +4,7 @@
   <img src="https://img.shields.io/badge/Gemini_1.5_Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white" alt="Gemini" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind" />
   <img src="https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white" alt="Leaflet" />
+  <a href="docs/Kasa_Edge_Hackathon_Presentation.pptx"><img src="https://img.shields.io/badge/Pitch_Deck-HACKERING_2.0-orange?style=for-the-badge&logo=microsoftpowerpoint&logoColor=white" alt="Pitch Deck" /></a>
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License" />
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge" alt="PRs Welcome" />
 </p>
@@ -26,7 +27,8 @@
   <a href="#-two-tiered-verification-matrix">Triage Matrix</a> •
   <a href="#-interactive-dashboard--simulator">Simulator Guide</a> •
   <a href="#-quickstart-in-60-seconds">Quickstart</a> •
-  <a href="#-api-reference">API Reference</a>
+  <a href="#-api-reference">API Reference</a> •
+  <a href="docs/Kasa_Edge_Hackathon_Presentation.pptx">📊 <b>Pitch Deck (.pptx)</b></a>
 </p>
 
 ---
