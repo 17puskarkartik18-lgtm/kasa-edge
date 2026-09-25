@@ -1,0 +1,516 @@
+/* Kasa.Edge Civic OS - Next-Gen Operations Center Theme */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --bg-void: #05070e;
+    --bg-surface: #0a0e1a;
+    --bg-card: rgba(13, 19, 36, 0.72);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-glow: rgba(0, 245, 160, 0.35);
+    
+    /* Neon Palette */
+    --neon-emerald: #00f5a0;
+    --neon-cyan: #00d9f5;
+    --neon-amber: #ffb800;
+    --neon-crimson: #ff3366;
+    --neon-purple: #a855f7;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-void);
+    color: #f8fafc;
+    letter-spacing: -0.015em;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 217, 245, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 245, 160, 0.06) 0%, transparent 40%),
+        radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 28px 28px;
+    background-attachment: fixed;
+}
+
+.font-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Glassmorphic Surfaces */
+.glass-panel {
+    background: rgba(11, 17, 33, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel:hover {
+    border-color: rgba(0, 245, 160, 0.25);
+    box-shadow: 0 14px 40px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 245, 160, 0.08);
+    transform: translateY(-2px);
+}
+
+.glass-panel-elevated {
+    background: rgba(10, 15, 29, 0.9);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 217, 245, 0.08);
+}
+
+/* Map Canvas */
+#map {
+    width: 100%;
+    height: 100%;
+    min-height: 540px;
+    background: #090d16;
+    z-index: 10;
+}
+
+/* Map Switcher Control */
+.leaflet-control-layers {
+    background: rgba(10, 15, 29, 0.92) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 10px 14px !important;
+    font-size: 11px !important;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.7) !important;
+}
+
+.leaflet-control-layers-toggle {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Tactical Markers with Neon Glows */
+.pulse-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0,0,0,0.9);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pulse-marker:hover {
+    transform: scale(1.3) rotate(5deg);
+    z-index: 999;
+}
+
+.pulse-marker::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    animation: marker-pulse 2.4s infinite cubic-bezier(0.24, 0, 0.38, 1);
+}
+
+@keyframes marker-pulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.95;
+    }
+    65% {
+        transform: scale(2.6);
+        opacity: 0.05;
+    }
+    100% {
+        transform: scale(3.0);
+        opacity: 0;
+    }
+}
+
+.marker-pending {
+    background: radial-gradient(circle, #ffb800 0%, #b45309 100%);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 15px rgba(255, 184, 0, 0.6);
+}
+.marker-pending::after {
+    border: 2px solid #ffb800;
+}
+
+.marker-confirmed {
+    background: radial-gradient(circle, #ff3366 0%, #b91c1c 100%);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 18px rgba(255, 51, 102, 0.7);
+}
+.marker-confirmed::after {
+    border: 2px solid #ff3366;
+}
+
+.marker-bin {
+    background: radial-gradient(circle, #ff8c00 0%, #c2410c 100%);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 16px rgba(255, 140, 0, 0.6);
+}
+.marker-bin::after {
+    border: 2px solid #ff8c00;
+}
+
+.marker-review {
+    background: radial-gradient(circle, #c084fc 0%, #7e22ce 100%);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 16px rgba(192, 132, 252, 0.6);
+}
+.marker-review::after {
+    border: 2px solid #c084fc;
+}
+
+.marker-blackspot {
+    background: radial-gradient(circle, #ff1a40 0%, #450a0a 100%);
+    border: 2.5px solid #ffb800;
+    box-shadow: 0 0 25px rgba(255, 26, 64, 0.85);
+}
+.marker-blackspot::after {
+    border: 2px solid #ff3366;
+}
+
+.marker-animal {
+    background: radial-gradient(circle, #64748b 0%, #334155 100%);
+    border: 2px solid #94a3b8;
+}
+.marker-animal::after {
+    border: 2px solid #64748b;
+}
+
+/* Vehicle Pulse Markers */
+.vehicle-marker {
+    background: radial-gradient(circle, #00f5a0 0%, #0284c7 100%);
+    border: 2.5px solid #ffffff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #05070e;
+    box-shadow: 0 0 24px #00f5a0;
+    cursor: pointer;
+    transition: transform 0.25s ease;
+}
+.vehicle-marker:hover {
+    transform: scale(1.25);
+}
+
+/* Split Image Comparison Slider with Laser Divider */
+.compare-container {
+    position: relative;
+    width: 100%;
+    height: 360px;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #000;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: ew-resize;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+.compare-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.compare-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    overflow: hidden;
+    border-right: 3px solid #00f5a0;
+    box-shadow: 0 0 25px rgba(0, 245, 160, 0.9);
+}
+
+.compare-handle {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: #00f5a0;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #05070e;
+    font-size: 14px;
+    box-shadow: 0 0 25px rgba(0, 245, 160, 1);
+    pointer-events: none;
+    z-index: 25;
+}
+
+/* Futuristic Scanner Viewfinder & Laser Grid */
+.scanner-hud {
+    position: relative;
+    overflow: hidden;
+}
+
+.scanner-hud::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #00f5a0, #00d9f5, transparent);
+    box-shadow: 0 0 15px #00f5a0;
+    animation: laser-scan 3.2s infinite ease-in-out;
+    z-index: 15;
+    pointer-events: none;
+}
+
+@keyframes laser-scan {
+    0% { top: 0%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+.reticle-corner-tl {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 16px;
+    height: 16px;
+    border-top: 2px solid #00d9f5;
+    border-left: 2px solid #00d9f5;
+    pointer-events: none;
+    z-index: 20;
+}
+.reticle-corner-tr {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 16px;
+    height: 16px;
+    border-top: 2px solid #00d9f5;
+    border-right: 2px solid #00d9f5;
+    pointer-events: none;
+    z-index: 20;
+}
+.reticle-corner-bl {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: 16px;
+    height: 16px;
+    border-bottom: 2px solid #00d9f5;
+    border-left: 2px solid #00d9f5;
+    pointer-events: none;
+    z-index: 20;
+}
+.reticle-corner-br {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 16px;
+    height: 16px;
+    border-bottom: 2px solid #00d9f5;
+    border-right: 2px solid #00d9f5;
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* Audio Spectrum Visualizer Bars */
+.spectrum-bar {
+    width: 3px;
+    background-color: #00f5a0;
+    border-radius: 2px;
+    animation: spectrum 0.8s infinite ease-in-out alternate;
+}
+.spectrum-bar:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+.spectrum-bar:nth-child(2) { height: 12px; animation-delay: 0.25s; }
+.spectrum-bar:nth-child(3) { height: 8px; animation-delay: 0.15s; }
+.spectrum-bar:nth-child(4) { height: 14px; animation-delay: 0.35s; }
+
+@keyframes spectrum {
+    0% { transform: scaleY(0.4); }
+    100% { transform: scaleY(1.3); }
+}
+
+/* Toast Notification */
+.toast-alert {
+    position: fixed;
+    top: 75px;
+    right: 24px;
+    z-index: 9999;
+    animation: toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes toast-in {
+    from { transform: translateX(100%) scale(0.9); opacity: 0; }
+    to { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+/* Official Civic Ticket Watermark */
+.ticket-watermark {
+    position: relative;
+    background-color: #090d16;
+    border: 1px solid rgba(0, 245, 160, 0.3);
+    box-shadow: 0 0 25px rgba(0, 245, 160, 0.15) inset;
+}
+.ticket-watermark::before {
+    content: "GREATER BENGALURU AUTHORITY";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-25deg);
+    font-size: 26px;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.035);
+    pointer-events: none;
+    white-space: nowrap;
+    letter-spacing: 0.18em;
+}
+
+/* Search Autocomplete & Gazetteer Dropdown */
+#search-dropdown::-webkit-scrollbar {
+    width: 5px;
+}
+#search-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(0, 245, 160, 0.3);
+    border-radius: 4px;
+}
+.search-suggestion-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.search-suggestion-item:hover,
+.search-suggestion-item.active {
+    background: rgba(0, 245, 160, 0.12);
+    border-left: 3px solid #00f5a0;
+}
+
+/* Tactical Search Beacon Pin on Map */
+.beacon-locator-marker {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.beacon-core {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #00f5a0;
+    box-shadow: 0 0 18px #00f5a0, 0 0 35px #00f5a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #05070e;
+    font-size: 11px;
+    z-index: 2;
+    animation: beacon-bounce 1s infinite alternate ease-in-out;
+}
+.beacon-ring {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #00f5a0;
+    animation: beacon-pulse 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+    opacity: 0.8;
+}
+@keyframes beacon-pulse {
+    0% { transform: scale(0.4); opacity: 0.9; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes beacon-bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-4px); }
+}
+
+/* Video Intake & Camera Recording HUD */
+.video-dropzone {
+    border: 2px dashed rgba(0, 217, 245, 0.35);
+    background: rgba(8, 13, 26, 0.6);
+    border-radius: 20px;
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+.video-dropzone:hover, .video-dropzone.dragover {
+    border-color: #00f5a0;
+    background: rgba(0, 245, 160, 0.06);
+    box-shadow: 0 0 25px rgba(0, 245, 160, 0.15) inset;
+}
+
+.recording-pulse {
+    width: 12px;
+    height: 12px;
+    background: #ff3366;
+    border-radius: 50%;
+    box-shadow: 0 0 12px #ff3366, 0 0 24px #ff3366;
+    animation: rec-blink 1s infinite alternate ease-in-out;
+}
+@keyframes rec-blink {
+    0% { opacity: 0.3; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1.15); }
+}
+
+.preset-video-card {
+    background: rgba(13, 20, 38, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.preset-video-card:hover {
+    border-color: #00d9f5;
+    background: rgba(0, 217, 245, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 217, 245, 0.12);
+}
+.preset-video-card.active {
+    border-color: #00f5a0;
+    background: rgba(0, 245, 160, 0.12);
+    box-shadow: 0 0 20px rgba(0, 245, 160, 0.2);
+}
+
+.video-scan-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 245, 160, 0.1) 0%, transparent 50%, rgba(0, 217, 245, 0.15) 100%);
+    pointer-events: none;
+    border-radius: 16px;
+    overflow: hidden;
+}
+.video-scan-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #00f5a0;
+    box-shadow: 0 0 18px #00f5a0, 0 0 35px #00f5a0;
+    animation: scan-video-line 2.2s infinite linear;
+}
+@keyframes scan-video-line {
+    0% { top: 0%; opacity: 0.2; }
+    50% { opacity: 1; }
+    100% { top: 100%; opacity: 0.2; }
+}
+

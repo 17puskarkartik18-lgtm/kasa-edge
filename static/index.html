@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasa.Edge // Autonomous Urban Waste Sensing & Civic-Triage System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-[#05070e] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-[#00f5a0] selection:text-black">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-950/80 backdrop-blur-2xl border-b border-white/10 px-5 py-2.5 flex items-center justify-between sticky top-0 z-50 shadow-2xl">
+        <div class="flex items-center space-x-4">
+            <!-- Brand Mark -->
+            <div class="flex items-center space-x-3 group cursor-pointer">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00f5a0] via-[#00d9f5] to-indigo-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform duration-300">
+                    <i class="fa-solid fa-radar text-slate-950 text-base"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-black text-white tracking-wider text-base">KASA<span class="text-[#00f5a0]">.EDGE</span></span>
+                        <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-500/40 uppercase tracking-widest font-bold shadow-[0_0_10px_rgba(0,245,160,0.2)]">Civic OS 2.4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Civic Jurisdiction Banner -->
+            <div class="hidden xl:flex items-center text-xs text-slate-400 border-l border-white/10 pl-4 space-x-3">
+                <span class="flex items-center space-x-1.5 text-slate-200">
+                    <i class="fa-solid fa-building-shield text-[#00f5a0] text-xs"></i>
+                    <strong class="font-semibold">Greater Bengaluru Authority</strong>
+                </span>
+                <span class="text-slate-600">•</span>
+                <span class="text-slate-400">BBMP East Zone (Ward 154 - Indiranagar)</span>
+                <span class="text-slate-600">•</span>
+                <span class="text-slate-400 flex items-center space-x-1"><i class="fa-solid fa-satellite-dish text-cyan-400 text-[10px]"></i><span>Sahaaya 2.0 Realtime Mesh</span></span>
+            </div>
+        </div>
+
+        <!-- Header Actions -->
+        <div class="flex items-center space-x-2 sm:space-x-2.5">
+            
+            <!-- Video Sensing Ingest Modal Trigger -->
+            <button id="btn-video-intake" class="bg-gradient-to-r from-emerald-600/30 to-cyan-600/30 hover:from-emerald-500/40 hover:to-cyan-500/40 text-white px-3.5 py-1.5 rounded-xl border border-cyan-400/40 text-xs transition flex items-center space-x-2 shadow-lg shadow-cyan-500/15 font-semibold group" title="Upload Video or Record Live Dashcam Feed with Hardware GPS">
+                <i class="fa-solid fa-video text-[#00f5a0] group-hover:scale-110 transition"></i>
+                <span class="text-[11px] font-bold">Video Sensing</span>
+                <span class="bg-[#00f5a0]/20 text-[#00f5a0] text-[9px] px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider">AI GPS</span>
+            </button>
+
+            <!-- Fleet Telemetry Cockpit Toggle -->
+            <button id="btn-toggle-fleet" class="bg-slate-900/90 hover:bg-slate-800/90 text-slate-300 hover:text-cyan-300 px-3 py-1.5 rounded-xl border border-white/10 text-xs transition flex items-center space-x-2 shadow-lg" title="Live Fleet Telemetry & Battery Monitor">
+                <i class="fa-solid fa-motorcycle text-cyan-400"></i>
+                <span class="hidden md:inline text-[11px] font-medium">Fleet Radar</span>
+            </button>
+
+            <!-- Sound Effects Toggle with Animated Mini Spectrum -->
+            <button id="btn-sound-toggle" class="bg-slate-900/90 hover:bg-slate-800/90 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl border border-white/10 text-xs transition flex items-center space-x-2 shadow-lg" title="Audio Feedback Synthesizer">
+                <div class="flex items-end space-x-0.5 h-3.5" id="spectrum-bars">
+                    <div class="spectrum-bar"></div>
+                    <div class="spectrum-bar"></div>
+                    <div class="spectrum-bar"></div>
+                    <div class="spectrum-bar"></div>
+                </div>
+                <span class="hidden md:inline text-[11px] font-mono" id="sound-label">Audio: ON</span>
+            </button>
+
+            <!-- Analytics Modal Trigger -->
+            <button id="btn-analytics" class="bg-slate-900/90 hover:bg-slate-800/90 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl border border-white/10 text-xs transition flex items-center space-x-2 shadow-lg" title="Spatial Analytics & Waste Breakdown">
+                <i class="fa-solid fa-chart-line text-[#00f5a0]"></i>
+                <span class="hidden md:inline text-[11px] font-medium">Analytics</span>
+            </button>
+
+            <!-- AI Engine Status Badge -->
+            <button id="btn-ai-status" class="flex items-center space-x-2 bg-slate-900/90 hover:bg-slate-800/90 px-3 py-1.5 rounded-xl border border-white/10 text-xs transition shadow-lg" title="View AI Engine status">
+                <span class="w-2 h-2 rounded-full bg-[#00f5a0] animate-pulse shadow-[0_0_8px_#00f5a0]"></span>
+                <i class="fa-solid fa-microchip text-[#00f5a0] text-xs"></i>
+                <span id="ai-mode-badge" class="text-slate-200 font-semibold text-[11px]">Autonomous Mode</span>
+                <i class="fa-solid fa-sliders text-slate-500 text-[10px]"></i>
+            </button>
+
+            <!-- Reset Button -->
+            <button id="btn-reset" class="bg-slate-900/90 hover:bg-slate-800/90 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl border border-white/10 text-xs transition flex items-center space-x-1.5 shadow-lg" title="Reset scenario & seed blackspot">
+                <i class="fa-solid fa-rotate-right text-slate-400"></i>
+                <span class="hidden sm:inline">Reset</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Collapsible Live Fleet Cockpit Telemetry Strip -->
+    <div id="fleet-cockpit-strip" class="bg-[#080d1a] border-b border-white/10 px-5 py-2 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs hidden">
+        <div class="glass-panel p-2.5 rounded-xl flex items-center justify-between border border-cyan-500/20">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold font-mono text-[11px]">R01</div>
+                <div>
+                    <div class="font-bold text-white text-[11px]">Swiggy Partner (R-01)</div>
+                    <div class="text-[10px] text-slate-400 font-mono">100 Feet Rd • Speed: <span class="text-emerald-400 font-semibold">34 km/h</span></div>
+                </div>
+            </div>
+            <div class="text-right font-mono text-[10px]">
+                <div class="text-emerald-400 flex items-center justify-end space-x-1"><i class="fa-solid fa-battery-three-quarters"></i><span>92%</span></div>
+                <div class="text-slate-500">Buffer: 114 KB</div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-2.5 rounded-xl flex items-center justify-between border border-emerald-500/20">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold font-mono text-[11px]">R02</div>
+                <div>
+                    <div class="font-bold text-white text-[11px]">Zomato Courier (R-02)</div>
+                    <div class="text-[10px] text-slate-400 font-mono">CMH Rd • Speed: <span class="text-emerald-400 font-semibold">38 km/h</span></div>
+                </div>
+            </div>
+            <div class="text-right font-mono text-[10px]">
+                <div class="text-emerald-400 flex items-center justify-end space-x-1"><i class="fa-solid fa-battery-full"></i><span>96%</span></div>
+                <div class="text-slate-500">Buffer: 98 KB</div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-2.5 rounded-xl flex items-center justify-between border border-purple-500/20">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold font-mono text-[11px]">R03</div>
+                <div>
+                    <div class="font-bold text-white text-[11px]">Uber Cab (R-03)</div>
+                    <div class="text-[10px] text-slate-400 font-mono">Domlur Flyover • Speed: <span class="text-emerald-400 font-semibold">42 km/h</span></div>
+                </div>
+            </div>
+            <div class="text-right font-mono text-[10px]">
+                <div class="text-emerald-400 flex items-center justify-end space-x-1"><i class="fa-solid fa-battery-half"></i><span>78%</span></div>
+                <div class="text-slate-500">Buffer: 124 KB</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Operational KPI Metrics Ribbon -->
+    <div class="bg-[#070b16]/90 border-b border-white/10 px-5 py-2.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs">
+        <div class="glass-panel p-3 rounded-2xl border border-white/5 hover:border-cyan-500/40 transition flex items-center justify-between group">
+            <div>
+                <div class="text-slate-400 font-semibold text-[11px] flex items-center space-x-1.5">
+                    <span>Active Fleet</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                </div>
+                <div id="stat-vehicles" class="text-xl font-black text-white font-mono mt-0.5">3</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition shadow-[0_0_12px_rgba(0,217,245,0.15)]"><i class="fa-solid fa-motorcycle text-sm"></i></div>
+        </div>
+
+        <div class="glass-panel p-3 rounded-2xl border border-white/5 hover:border-blue-500/40 transition flex items-center justify-between group">
+            <div>
+                <div class="text-slate-400 font-semibold text-[11px]">Passive Crops</div>
+                <div class="flex items-baseline space-x-1 mt-0.5">
+                    <span id="stat-observations" class="text-xl font-black text-blue-400 font-mono">0</span>
+                    <span class="text-[9px] text-slate-500 font-mono">≤150 KB</span>
+                </div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center group-hover:scale-110 transition shadow-[0_0_12px_rgba(59,130,246,0.15)]"><i class="fa-solid fa-camera-viewfinder text-sm"></i></div>
+        </div>
+
+        <div class="glass-panel p-3 rounded-2xl border border-white/5 hover:border-red-500/40 transition flex items-center justify-between group">
+            <div>
+                <div class="text-slate-400 font-semibold text-[11px]">Confirmed Dumps</div>
+                <div id="stat-confirmed" class="text-xl font-black text-red-400 font-mono mt-0.5">0</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center group-hover:scale-110 transition shadow-[0_0_12px_rgba(239,68,68,0.15)]"><i class="fa-solid fa-triangle-exclamation text-sm"></i></div>
+        </div>
+
+        <div class="glass-panel p-3 rounded-2xl border border-white/5 hover:border-amber-500/40 transition flex items-center justify-between group">
+            <div>
+                <div class="text-slate-400 font-semibold text-[11px]">Pending 2nd Pass</div>
+                <div id="stat-pending" class="text-xl font-black text-amber-400 font-mono mt-0.5">0</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center group-hover:scale-110 transition shadow-[0_0_12px_rgba(245,158,11,0.15)]"><i class="fa-solid fa-hourglass-half text-sm"></i></div>
+        </div>
+
+        <div class="glass-panel p-3 rounded-2xl border border-white/5 hover:border-emerald-500/40 transition flex items-center justify-between group">
+            <div>
+                <div class="text-slate-400 font-semibold text-[11px]">Sahaaya 2.0 Tickets</div>
+                <div id="stat-tickets" class="text-xl font-black text-[#00f5a0] font-mono mt-0.5">0</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-[#00f5a0] flex items-center justify-center group-hover:scale-110 transition shadow-[0_0_15px_rgba(0,245,160,0.25)]"><i class="fa-solid fa-file-invoice text-sm"></i></div>
+        </div>
+
+        <div class="glass-panel p-3 rounded-2xl border border-white/5 hover:border-purple-500/40 transition flex items-center justify-between group">
+            <div>
+                <div class="text-slate-400 font-semibold text-[11px]">Spam Blocked (Fauna)</div>
+                <div id="stat-rejected" class="text-xl font-black text-purple-400 font-mono mt-0.5">0</div>
+            </div>
+            <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center group-hover:scale-110 transition shadow-[0_0_12px_rgba(168,85,247,0.15)]"><i class="fa-solid fa-shield-halved text-sm"></i></div>
+        </div>
+    </div>
+
+    <!-- Main Command Workspace -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden relative">
+
+        <!-- Left / Center: Interactive Tactical Map & Playback Deck -->
+        <section class="lg:col-span-8 flex flex-col border-r border-white/10 relative h-[640px] lg:h-auto" id="map-section">
+            
+            <!-- Map HUD Floating Overlay Bar -->
+            <div class="absolute top-3 left-3 right-3 z-[400] flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+                
+                <!-- Quick Category Filter Pills -->
+                <div class="flex items-center space-x-1 bg-slate-950/90 backdrop-blur-2xl border border-white/15 p-1 rounded-2xl shadow-2xl pointer-events-auto text-xs">
+                    <button id="filter-all" class="px-3 py-1 rounded-xl bg-[#00f5a0] text-slate-950 font-bold text-[11px] transition shadow-[0_0_10px_rgba(0,245,160,0.3)]">All</button>
+                    <button id="filter-dumps" class="px-3 py-1 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 text-[11px] transition font-medium">Dumps</button>
+                    <button id="filter-bins" class="px-3 py-1 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 text-[11px] transition font-medium">Bins</button>
+                    <button id="filter-debris" class="px-3 py-1 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 text-[11px] transition font-medium">C&D</button>
+                    <button id="filter-blackspots" class="px-3 py-1 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 text-[11px] transition font-medium">Blackspots</button>
+                </div>
+
+                <!-- Map Tools -->
+                <div class="flex items-center space-x-2 pointer-events-auto">
+                    <!-- Search Input with Live Autocomplete Dropdown -->
+                    <div class="relative w-56 sm:w-72 md:w-80 transition-all duration-300">
+                        <input id="map-search-input" type="text" placeholder="Search ward, street, corridor, ID..." autocomplete="off" class="w-full bg-slate-950/95 backdrop-blur-2xl border border-white/20 focus:border-[#00f5a0] rounded-2xl pl-8 pr-8 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none shadow-[0_4px_20px_rgba(0,0,0,0.6)] focus:shadow-[0_0_20px_rgba(0,245,160,0.25)] transition font-mono">
+                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-[#00f5a0] text-[11px] pointer-events-none"></i>
+                        <button id="search-clear-btn" class="hidden absolute right-2.5 top-1.5 text-slate-400 hover:text-white text-xs px-1 py-0.5 rounded transition" title="Clear Search">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+
+                        <!-- Autocomplete / Gazetteer Dropdown -->
+                        <div id="search-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-slate-950/95 backdrop-blur-2xl border border-emerald-500/30 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden z-[500] max-h-80 overflow-y-auto divide-y divide-white/5 font-sans">
+                        </div>
+                    </div>
+
+                    <!-- Density Heatmap Toggle -->
+                    <button id="btn-toggle-heatmap" class="bg-slate-950/90 backdrop-blur-2xl hover:bg-slate-800 text-slate-300 hover:text-[#00f5a0] px-3 py-1.5 rounded-2xl border border-white/15 shadow-2xl transition text-xs flex items-center space-x-1.5" title="Toggle Waste Density Heatmap">
+                        <i class="fa-solid fa-fire text-amber-400"></i>
+                        <span class="hidden md:inline text-[11px] font-medium">Heatmap</span>
+                    </button>
+
+                    <!-- Fullscreen Toggle -->
+                    <button id="btn-map-fullscreen" class="bg-slate-950/90 backdrop-blur-2xl hover:bg-slate-800 text-slate-300 hover:text-white p-2 rounded-2xl border border-white/15 shadow-2xl transition text-xs" title="Expand Map to Fullscreen">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Leaflet Map Container -->
+            <div id="map" class="flex-1 w-full relative"></div>
+
+            <!-- Floating Legend -->
+            <div class="absolute bottom-28 left-4 z-[400] bg-slate-950/90 backdrop-blur-2xl border border-white/15 p-3.5 rounded-2xl text-xs space-y-2 shadow-2xl max-w-xs">
+                <div class="font-bold text-slate-200 mb-1 border-b border-white/10 pb-1 flex items-center justify-between text-[11px]">
+                    <span class="flex items-center space-x-1.5">
+                        <i class="fa-solid fa-circle-dot text-[#00f5a0]"></i>
+                        <span>Spatial Corroboration Key</span>
+                    </span>
+                    <span class="text-[10px] text-[#00f5a0] font-mono">Haversine ≤ 30m</span>
+                </div>
+                <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#ffb800] border border-white shrink-0 shadow-[0_0_8px_#ffb800]"></span>
+                        <span class="text-slate-300 truncate">1 Pass (Pending)</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#ff3366] border border-white shrink-0 shadow-[0_0_8px_#ff3366]"></span>
+                        <span class="text-slate-300 truncate">2+ Passes (Confirmed)</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#ff8c00] border border-white shrink-0 shadow-[0_0_8px_#ff8c00]"></span>
+                        <span class="text-slate-300 truncate">Overflowing Bin</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#c084fc] border border-white shrink-0 shadow-[0_0_8px_#c084fc]"></span>
+                        <span class="text-slate-300 truncate">C&D Rubble (Review)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Mission Playback & Simulation Controller -->
+            <div class="bg-slate-950/95 backdrop-blur-2xl border-t border-white/10 p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs z-30 shadow-2xl">
+                
+                <!-- Playback Scrubber & Controls -->
+                <div class="flex items-center space-x-2.5 w-full sm:w-auto">
+                    <button id="btn-timeline-play" class="bg-[#00f5a0] hover:bg-[#00d9f5] text-slate-950 font-black px-4 py-2 rounded-xl flex items-center space-x-2 transition shadow-lg shadow-emerald-500/25">
+                        <i id="play-icon" class="fa-solid fa-play text-xs"></i>
+                        <span id="play-text">Auto Play</span>
+                    </button>
+                    <button id="btn-timeline-step" class="bg-slate-900 hover:bg-slate-800 text-slate-200 px-3.5 py-2 rounded-xl border border-white/10 flex items-center space-x-1.5 transition font-semibold">
+                        <i class="fa-solid fa-forward-step"></i>
+                        <span>Next Pass</span>
+                    </button>
+                    <!-- Speed Selector -->
+                    <div class="flex items-center space-x-1 bg-black/60 p-1 rounded-xl border border-white/10 font-mono text-[10px]">
+                        <button class="btn-speed px-2 py-0.5 rounded-lg bg-[#00f5a0] text-slate-950 font-black" data-speed="1">1x</button>
+                        <button class="btn-speed px-2 py-0.5 rounded-lg text-slate-400 hover:text-white font-medium" data-speed="2">2x</button>
+                        <button class="btn-speed px-2 py-0.5 rounded-lg text-slate-400 hover:text-white font-medium" data-speed="4">4x</button>
+                    </div>
+                </div>
+
+                <!-- Step Progress Track -->
+                <div class="flex-1 max-w-md mx-4 hidden md:flex flex-col space-y-1.5">
+                    <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                        <span id="sim-step-badge" class="font-bold text-[#00d9f5]">PASS 0 OF 6</span>
+                        <span id="sim-step-name" class="text-emerald-400 font-semibold truncate">Fleet Idle — Click Next Pass or Auto Play</span>
+                    </div>
+                    <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden border border-white/5">
+                        <div id="sim-progress-bar" class="bg-gradient-to-r from-[#00f5a0] via-[#00d9f5] to-indigo-500 h-1.5 rounded-full transition-all duration-300 shadow-[0_0_12px_#00f5a0]" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Custom Camera Injection Trigger & Video Sensing Intake -->
+                <div class="flex items-center space-x-2 shrink-0">
+                    <button id="btn-video-intake-deck" class="bg-gradient-to-r from-emerald-600/30 to-cyan-600/30 hover:from-emerald-500/40 hover:to-cyan-500/40 text-white px-3.5 py-2 rounded-xl border border-cyan-400/40 flex items-center space-x-1.5 transition text-xs font-semibold shadow-lg shadow-cyan-500/15">
+                        <i class="fa-solid fa-video text-[#00f5a0] text-xs"></i>
+                        <span>Ingest Video</span>
+                    </button>
+                    <button id="btn-custom-pass" class="bg-slate-900 hover:bg-slate-800 text-cyan-300 hover:text-cyan-200 px-3.5 py-2 rounded-xl border border-cyan-500/30 flex items-center space-x-1.5 transition text-xs font-semibold shadow-lg">
+                        <i class="fa-solid fa-camera-retro text-cyan-400 text-xs"></i>
+                        <span>Inject Custom Pass</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Real-Time Operational Event Terminal Ticker -->
+            <div class="bg-black/95 border-t border-white/5 py-1.5 px-4 flex items-center justify-between text-[11px] font-mono z-30">
+                <div class="flex items-center space-x-2.5 truncate">
+                    <span class="w-2 h-2 rounded-full bg-[#00d9f5] animate-pulse shadow-[0_0_6px_#00d9f5]"></span>
+                    <span class="text-slate-500 uppercase tracking-wider text-[10px]">EVENT STREAM:</span>
+                    <span id="telemetry-log" class="text-cyan-300 truncate">Passive camera mesh ready. Monitoring Indiranagar patrol routes...</span>
+                </div>
+                <div class="text-[10px] text-slate-500 hidden sm:inline font-mono">
+                    BUFFER: <span class="text-[#00f5a0] font-bold">100% LOCAL</span> | TRANSMIT: <span class="text-[#00f5a0] font-bold">≤150KB JPEG</span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Column: Civic Triage & Incident Feed Deck -->
+        <section class="lg:col-span-4 flex flex-col bg-slate-950/70 h-full overflow-hidden">
+            <!-- Tabs Header -->
+            <div class="flex border-b border-white/10 bg-slate-950/90 text-xs font-semibold">
+                <button id="tab-incidents-btn" class="flex-1 py-3 px-2 border-b-2 border-[#00f5a0] text-[#00f5a0] font-bold transition flex items-center justify-center space-x-1.5">
+                    <i class="fa-solid fa-map-pin"></i>
+                    <span>Incidents (<span id="count-incidents">0</span>)</span>
+                </button>
+                <button id="tab-tickets-btn" class="flex-1 py-3 px-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center justify-center space-x-1.5">
+                    <i class="fa-solid fa-file-contract"></i>
+                    <span>Sahaaya Tickets (<span id="count-tickets">0</span>)</span>
+                </button>
+                <button id="tab-blackspots-btn" class="flex-1 py-3 px-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center justify-center space-x-1.5">
+                    <i class="fa-solid fa-fire text-amber-400"></i>
+                    <span>Blackspots (<span id="count-blackspots">1</span>)</span>
+                </button>
+            </div>
+
+            <!-- Tab Content: Incidents List -->
+            <div id="tab-incidents" class="flex-1 overflow-y-auto p-3.5 space-y-3">
+                <div id="incidents-empty" class="text-center py-20 text-slate-500 text-xs">
+                    <div class="w-14 h-14 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-3 text-slate-600 shadow-xl">
+                        <i class="fa-solid fa-satellite-dish text-2xl text-slate-500"></i>
+                    </div>
+                    No passive observations logged yet.<br>Click <strong class="text-[#00f5a0]">Next Pass</strong> or <strong class="text-[#00f5a0]">Auto Play</strong> to activate vehicle dashcam scanning.
+                </div>
+                <div id="incidents-list" class="space-y-3"></div>
+            </div>
+
+            <!-- Tab Content: Tickets List -->
+            <div id="tab-tickets" class="flex-1 overflow-y-auto p-3.5 space-y-3 hidden">
+                <div id="tickets-empty" class="text-center py-20 text-slate-500 text-xs">
+                    <div class="w-14 h-14 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-3 text-slate-600 shadow-xl">
+                        <i class="fa-solid fa-inbox text-2xl text-slate-500"></i>
+                    </div>
+                    No civic tickets issued yet.<br>Deterministic policy requires <strong class="text-amber-400">≥ 2 independent vehicle passes</strong> before compactor crew dispatch.
+                </div>
+                <div id="tickets-list" class="space-y-3"></div>
+            </div>
+
+            <!-- Tab Content: Blackspots List -->
+            <div id="tab-blackspots" class="flex-1 overflow-y-auto p-3.5 space-y-3 hidden">
+                <div id="blackspots-list" class="space-y-3"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal: Interactive Evidence Package & Split Privacy Curtain Slider -->
+    <div id="modal-evidence" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] flex items-center justify-center p-4 hidden">
+        <div class="glass-panel-elevated w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-slate-950/80">
+                <div class="flex items-center space-x-3">
+                    <span id="modal-badge-status" class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/40 shadow-[0_0_10px_rgba(239,68,68,0.2)]">CONFIRMED</span>
+                    <h3 id="modal-title" class="text-base font-black text-white font-mono">INC-00000000</h3>
+                    <span id="modal-category-badge" class="text-xs px-2.5 py-0.5 rounded-lg bg-slate-900 text-slate-300 font-mono border border-white/10">ROADSIDE DUMP</span>
+                </div>
+                <button id="modal-close" class="text-slate-400 hover:text-white text-lg p-2 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
+
+                <!-- Section 1: Interactive Split-Curtain Privacy Comparison Slider with Scanner HUD -->
+                <div class="bg-slate-950/90 p-4.5 rounded-2xl border border-white/10 space-y-3.5 shadow-2xl">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <span class="font-bold text-slate-100 text-sm flex items-center space-x-2">
+                                <i class="fa-solid fa-shield-halved text-[#00f5a0]"></i>
+                                <span>Edge Privacy Guarantee // Split-Curtain Inspector</span>
+                            </span>
+                            <p class="text-slate-400 text-[11px]">Drag the vertical laser handle horizontally to compare on-device camera RAM buffer against the anonymized cloud crop.</p>
+                        </div>
+                        <div class="flex items-center space-x-2 text-[10px] font-mono">
+                            <span class="px-2.5 py-1 rounded-lg bg-red-950/90 text-red-300 border border-red-800/80">← Raw (Device RAM Buffer)</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-emerald-950/90 text-[#00f5a0] border border-emerald-800/80">Anonymized Cloud Crop →</span>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Drag Comparison Container with Laser Scanner Line & Reticles -->
+                    <div id="compare-slider" class="compare-container scanner-hud border border-white/15 shadow-2xl">
+                        <!-- Corner Viewfinder Reticles -->
+                        <div class="reticle-corner-tl"></div>
+                        <div class="reticle-corner-tr"></div>
+                        <div class="reticle-corner-bl"></div>
+                        <div class="reticle-corner-br"></div>
+
+                        <!-- Bottom Image: Anonymized Cloud Crop (Blurred) -->
+                        <img id="img-compare-after" src="/static/sample_images/mixed_waste_blurred.jpg" alt="Anonymized Crop" class="compare-img">
+                        
+                        <!-- Top Image Overlay: Raw Edge Camera Stream -->
+                        <div id="compare-overlay" class="compare-overlay" style="width: 50%;">
+                            <img id="img-compare-before" src="/static/sample_images/mixed_waste_raw.jpg" alt="Raw Camera Stream" class="compare-img" style="width: 100%; min-width: 100%;">
+                        </div>
+
+                        <!-- Draggable Divider Handle -->
+                        <div id="compare-handle" class="compare-handle" style="left: 50%;">
+                            <i class="fa-solid fa-arrows-left-right text-xs"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 font-mono">
+                        <span class="text-[#00f5a0] flex items-center space-x-1.5">
+                            <i class="fa-solid fa-circle-check text-xs"></i>
+                            <span>On-Device Edge Anonymization: Faces & Vehicle Plates Masked</span>
+                        </span>
+                        <span class="text-cyan-400">Crop Payload: 114 KB JPEG (Zero Raw Video Leaked)</span>
+                    </div>
+                </div>
+
+                <!-- Section 1B: Embedded Dashcam Video Stream (If Ingested from Video Feed) -->
+                <div id="modal-video-section" class="bg-slate-950/90 p-4.5 rounded-2xl border border-cyan-500/25 space-y-3 shadow-2xl hidden">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-video text-cyan-400"></i>
+                            <span class="font-bold text-slate-100 text-sm">Synchronized Dashcam Video Feed</span>
+                        </div>
+                        <span id="modal-video-badge" class="px-2.5 py-0.5 rounded-lg bg-cyan-950 text-cyan-300 font-mono text-[10px] border border-cyan-700/60">GPS VERIFIED</span>
+                    </div>
+                    <div class="relative rounded-xl overflow-hidden bg-black border border-white/10 flex items-center justify-center max-h-64">
+                        <video id="modal-video-player" controls playsinline class="w-full max-h-64 object-contain rounded-xl"></video>
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                        <span class="flex items-center space-x-1.5 text-cyan-300">
+                            <i class="fa-solid fa-satellite text-xs"></i>
+                            <span id="modal-video-gps-info">ISO 6709 Hardware GPS Encoded</span>
+                        </span>
+                        <span class="text-slate-400 text-[10px]">Buffered on edge, candidate frames sampled</span>
+                    </div>
+                </div>
+
+                <!-- Section 2: Deterministic Policy & Explainable Rationale -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-950/90 p-4.5 rounded-2xl border border-white/10 space-y-3">
+                        <div class="font-bold text-slate-100 flex items-center justify-between">
+                            <span class="flex items-center space-x-2">
+                                <i class="fa-solid fa-code-commit text-[#00f5a0]"></i>
+                                <span>Deterministic Policy Checklist</span>
+                            </span>
+                            <span class="font-mono text-[#00f5a0] text-[10px] bg-emerald-950 px-2 py-0.5 rounded-md border border-emerald-800">ZERO AI HALLUCINATION</span>
+                        </div>
+                        <ul id="modal-rationale-list" class="space-y-2.5 text-slate-300"></ul>
+                    </div>
+
+                    <div class="bg-slate-950/90 p-4.5 rounded-2xl border border-white/10 space-y-3.5">
+                        <div class="font-bold text-slate-100 flex items-center justify-between">
+                            <span class="flex items-center space-x-2">
+                                <i class="fa-solid fa-gauge-high text-amber-400"></i>
+                                <span>Persistence Scoring Matrix</span>
+                            </span>
+                            <span id="modal-score-badge" class="font-mono text-amber-400 font-black text-sm">75 / 100</span>
+                        </div>
+                        <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-white/5">
+                            <div id="modal-score-bar" class="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 h-2.5 rounded-full transition-all duration-500 shadow-[0_0_10px_#ff8c00]" style="width: 75%"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-400 pt-2 border-t border-white/10 font-mono">
+                            <div>Independent Vehicles: <strong id="modal-unique-vehicles" class="text-white">2</strong></div>
+                            <div>Corroborated Passes: <strong id="modal-obs-count" class="text-white">2</strong></div>
+                            <div>GBA Ward: <strong id="modal-ward" class="text-white">154 (Indiranagar)</strong></div>
+                            <div>Authority: <strong class="text-white">GBA / BBMP East</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Multi-Pass Spatial Corroboration Audit Log -->
+                <div class="bg-slate-950/90 p-4.5 rounded-2xl border border-white/10 space-y-2.5">
+                    <div class="font-bold text-slate-100 flex items-center justify-between">
+                        <span class="flex items-center space-x-2">
+                            <i class="fa-solid fa-route text-cyan-400"></i>
+                            <span>Multi-Vehicle Corroboration Audit Trail</span>
+                        </span>
+                        <span class="text-slate-400 text-[11px] font-mono">Haversine Proximity Check</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px]">
+                            <thead class="text-slate-500 border-b border-white/10">
+                                <tr>
+                                    <th class="py-2.5">Vehicle Partner</th>
+                                    <th class="py-2.5">Pass Timestamp</th>
+                                    <th class="py-2.5">VLM Semantic Classification</th>
+                                    <th class="py-2.5">Confidence</th>
+                                    <th class="py-2.5">GPS Precision</th>
+                                    <th class="py-2.5">Haversine Distance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-passes-table" class="divide-y divide-white/5 text-slate-300 font-mono"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section 4: Sahaaya 2.0 Ticket Payload Box -->
+                <div id="modal-ticket-box" class="ticket-watermark p-5 rounded-2xl space-y-3 hidden">
+                    <div class="flex items-center justify-between text-[#00f5a0] font-bold">
+                        <span class="flex items-center space-x-2">
+                            <i class="fa-solid fa-certificate text-[#00f5a0] text-base"></i>
+                            <span class="text-sm">Official Sahaaya 2.0 Dispatch Ticket</span>
+                        </span>
+                        <span id="modal-ticket-id" class="font-mono text-xs bg-emerald-950 text-emerald-300 px-3 py-1 rounded-xl border border-emerald-600 shadow-[0_0_12px_rgba(0,245,160,0.3)]">GBA-SHY-2026-0001</span>
+                    </div>
+                    <p class="text-slate-300 text-[11px] leading-relaxed">Cryptographically signed civic evidence package pushed to Greater Bengaluru Authority compactor dispatch queue. Autonomous resolution tracking enabled.</p>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-white/10 bg-slate-950 flex justify-between items-center">
+                <button id="modal-print-btn" class="bg-slate-900 hover:bg-slate-800 text-slate-200 px-4 py-2 rounded-xl font-semibold text-xs transition flex items-center space-x-2 border border-white/10 shadow-lg">
+                    <i class="fa-solid fa-print text-[#00f5a0]"></i>
+                    <span>Print Official Work Order</span>
+                </button>
+                <button id="modal-close-btn" class="bg-[#00f5a0] hover:bg-[#00d9f5] text-slate-950 px-6 py-2 rounded-xl font-black text-xs transition shadow-lg shadow-emerald-500/25">
+                    Close Inspector
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Spatial Analytics & Intelligence (Chart.js) -->
+    <div id="modal-analytics-dialog" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] flex items-center justify-center p-4 hidden">
+        <div class="glass-panel-elevated w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-slate-950/80">
+                <div class="flex items-center space-x-2.5">
+                    <i class="fa-solid fa-chart-pie text-cyan-400 text-base"></i>
+                    <h3 class="font-bold text-white text-sm">Spatial Intelligence & Waste Density Analytics</h3>
+                </div>
+                <button id="modal-analytics-close" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 space-y-6 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Chart 1: Category Distribution -->
+                    <div class="bg-slate-950/90 p-4.5 rounded-2xl border border-white/10 shadow-2xl">
+                        <h4 class="font-bold text-slate-200 text-xs mb-3 flex items-center space-x-2">
+                            <i class="fa-solid fa-pie-chart text-[#00f5a0]"></i>
+                            <span>Waste Category Breakdown</span>
+                        </h4>
+                        <div class="h-60">
+                            <canvas id="chart-categories"></canvas>
+                        </div>
+                    </div>
+                    <!-- Chart 2: Persistence Scores -->
+                    <div class="bg-slate-950/90 p-4.5 rounded-2xl border border-white/10 shadow-2xl">
+                        <h4 class="font-bold text-slate-200 text-xs mb-3 flex items-center space-x-2">
+                            <i class="fa-solid fa-wave-square text-cyan-400"></i>
+                            <span>Persistence Score Accumulation Across Multi-Passes</span>
+                        </h4>
+                        <div class="h-60">
+                            <canvas id="chart-persistence"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: AI Configuration & API Key Settings -->
+    <div id="modal-ai-config" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] flex items-center justify-center p-4 hidden">
+        <div class="glass-panel-elevated w-full max-w-lg rounded-3xl shadow-2xl p-6 space-y-4 text-xs">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-microchip text-[#00f5a0] text-base"></i>
+                    <h3 class="font-bold text-white text-sm">AI Verification Engine Status</h3>
+                </div>
+                <button id="modal-ai-close" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Active Status Box -->
+            <div class="bg-emerald-950/40 border border-emerald-800/60 p-4 rounded-2xl space-y-1.5 shadow-[0_0_20px_rgba(0,245,160,0.15)]">
+                <div class="flex items-center justify-between text-[#00f5a0] font-bold">
+                    <span class="flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#00f5a0] animate-pulse"></span>
+                        <span id="cfg-status-mode">Autonomous High-Precision Verifier</span>
+                    </span>
+                    <span class="bg-emerald-900 text-emerald-300 px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold">ACTIVE</span>
+                </div>
+                <p class="text-slate-300 text-[11px] leading-relaxed" id="cfg-status-message">
+                    The platform runs fully autonomously without requiring any external API key. All two-tier classification decisions (mixed waste, overflowing bin, stray animal filter, construction rubble) are executed with deterministic precision.
+                </p>
+            </div>
+
+            <!-- Optional Gemini API Key Input -->
+            <div class="space-y-2 pt-1 border-t border-white/10">
+                <div class="flex items-center justify-between">
+                    <label class="font-semibold text-slate-300">Optional: Connect Google Gemini API Key</label>
+                    <span class="text-[10px] text-slate-500 font-mono">Optional</span>
+                </div>
+                <p class="text-slate-400 text-[11px]">If you want to invoke live Gemini 1.5/2.0 Flash multimodal models directly from Google AI Studio, enter your key below:</p>
+                <input id="input-gemini-key" type="password" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white font-mono text-xs focus:border-[#00f5a0] outline-none">
+                <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                    <span>Target Multimodal Model:</span>
+                    <select id="select-gemini-model" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 font-mono text-[10px] outline-none focus:border-[#00f5a0]">
+                        <option value="auto">Auto: Dynamic Discovery (ListModels)</option>
+                        <option value="gemini-2.0-flash">gemini-2.0-flash (Recommended)</option>
+                        <option value="gemini-1.5-flash-latest">gemini-1.5-flash-latest</option>
+                        <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                        <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp</option>
+                        <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                    </select>
+                </div>
+                <div id="key-test-feedback" class="text-[11px] hidden pt-1"></div>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-3 border-t border-white/10">
+                <button id="btn-save-key" class="bg-[#00f5a0] hover:bg-[#00d9f5] text-slate-950 font-black px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-lg shadow-emerald-500/25">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Verify & Save Key</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Inject Custom Pass -->
+    <div id="modal-custom" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] flex items-center justify-center p-4 hidden">
+        <div class="glass-panel-elevated w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4 text-xs">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="font-bold text-white text-sm">Inject Live Vehicle Camera Pass</h3>
+                <button id="modal-custom-close" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-3.5">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-medium">Vehicle Partner</label>
+                    <select id="custom-vehicle" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white outline-none focus:border-[#00f5a0]">
+                        <option value="R01-BLR-SWIGGY">Swiggy Partner (R-01)</option>
+                        <option value="R02-BLR-ZOMATO">Zomato Courier (R-02)</option>
+                        <option value="R03-BLR-UBER">Uber Cab (R-03)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 mb-1 font-medium">Observation Scene Type</label>
+                    <select id="custom-type" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white outline-none focus:border-[#00f5a0]">
+                        <option value="mixed_waste">Roadside Garbage Dump (Mixed Waste)</option>
+                        <option value="overflowing_bin">Overflowing Municipal Bin</option>
+                        <option value="animal">Curbside Stray Dog / Cow (False-Positive Filter)</option>
+                        <option value="construction">C&D Construction Debris (Human Review)</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-medium">Latitude</label>
+                        <input id="custom-lat" type="number" step="0.0001" value="12.9719" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white font-mono outline-none focus:border-[#00f5a0]">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-medium">Longitude</label>
+                        <input id="custom-lon" type="number" step="0.0001" value="77.6412" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-white font-mono outline-none focus:border-[#00f5a0]">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-3 border-t border-white/10">
+                <button id="custom-cancel-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-1.5 rounded-xl font-medium">Cancel</button>
+                <button id="custom-submit-btn" class="bg-[#00f5a0] hover:bg-[#00d9f5] text-slate-950 font-black px-4 py-2 rounded-xl shadow-lg shadow-emerald-500/25">Send Ingest Crop</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Video Sensing Ingest & Telemetry Analyzer -->
+    <div id="modal-video-intake" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] flex items-center justify-center p-4 hidden">
+        <div class="glass-panel-elevated w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-cyan-500/30">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-slate-950/90">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-[#00f5a0] flex items-center justify-center border border-emerald-500/30 shadow-[0_0_12px_rgba(0,245,160,0.2)]">
+                        <i class="fa-solid fa-video text-base"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+                            <span>Dashcam & Video Sensing Ingest Deck</span>
+                            <span class="bg-[#00f5a0]/20 text-[#00f5a0] text-[9px] px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">Edge GPS Extractor</span>
+                        </h3>
+                        <p class="text-slate-400 text-[11px]">Upload video footage or record live to automatically extract GPS coordinates, sample frames, anonymize faces, and trigger civic triage.</p>
+                    </div>
+                </div>
+                <button id="modal-video-close" class="text-slate-400 hover:text-white text-lg p-2 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex border-b border-white/10 bg-slate-900/60 text-xs font-semibold px-6 pt-2">
+                <button id="vtab-upload-btn" class="py-2.5 px-4 border-b-2 border-[#00f5a0] text-[#00f5a0] font-bold transition flex items-center space-x-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Upload Video File</span>
+                </button>
+                <button id="vtab-record-btn" class="py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-circle-dot text-red-400"></i>
+                    <span>Record Live Camera</span>
+                </button>
+                <button id="vtab-presets-btn" class="py-2.5 px-4 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-bolt text-amber-400"></i>
+                    <span>Dashcam Presets (Ward 154)</span>
+                </button>
+            </div>
+
+            <!-- Modal Content Body -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+
+                <!-- Tab 1: Upload File Container -->
+                <div id="vtab-upload" class="space-y-3">
+                    <div id="video-dropzone" class="video-dropzone p-6 flex flex-col items-center justify-center text-center space-y-2.5 border-2 border-dashed border-cyan-500/40 hover:border-[#00f5a0] transition">
+                        <input type="file" id="video-file-input" accept="video/mp4,video/quicktime,video/webm,video/x-matroska,video/*" class="hidden">
+                        <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl shadow-[0_0_15px_rgba(0,217,245,0.2)]">
+                            <i class="fa-solid fa-file-video"></i>
+                        </div>
+                        <div class="text-sm font-bold text-white">Drag & drop dashcam footage here, or <span class="text-[#00f5a0] underline cursor-pointer" id="video-browse-trigger">browse computer</span></div>
+                        <div class="text-slate-400 text-[11px]">Supports MP4, MOV (QuickTime ISO 6709), WebM, AVI • Up to 100 MB</div>
+                        <div class="flex items-center space-x-3 text-[10px] text-slate-500 font-mono pt-1">
+                            <span><i class="fa-solid fa-satellite text-cyan-400 mr-1"></i>Auto-extracts QuickTime/XMP GPS</span>
+                            <span><i class="fa-solid fa-user-shield text-emerald-400 mr-1"></i>On-device edge face/plate masking</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Live Camera Recording Container -->
+                <div id="vtab-record" class="space-y-3 hidden">
+                    <div class="bg-black rounded-2xl p-3 border border-red-500/30 space-y-3">
+                        <div class="relative bg-slate-950 rounded-xl overflow-hidden aspect-video flex items-center justify-center border border-white/10">
+                            <video id="camera-live-stream" autoplay muted playsinline class="w-full h-full object-cover hidden"></video>
+                            <div id="camera-placeholder" class="text-center p-6 text-slate-500 space-y-2">
+                                <i class="fa-solid fa-camera text-3xl text-slate-600"></i>
+                                <div class="text-slate-400 font-medium">Camera not initialized</div>
+                                <div class="text-[11px] text-slate-500">Requires camera & location permissions for live dashcam sensing</div>
+                            </div>
+                            <div id="recording-indicator" class="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-red-500/60 flex items-center space-x-2 text-[11px] font-mono font-bold text-red-400 hidden">
+                                <span class="recording-pulse"></span>
+                                <span id="recording-timer">REC 00:00</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Action Bar -->
+                        <div class="flex items-center justify-between gap-2">
+                            <button id="btn-start-camera" class="bg-slate-900 hover:bg-slate-800 text-slate-200 px-3.5 py-2 rounded-xl border border-white/10 flex items-center space-x-2 transition font-medium">
+                                <i class="fa-solid fa-power-off text-emerald-400"></i>
+                                <span>Start Camera</span>
+                            </button>
+                            <div class="flex items-center space-x-2">
+                                <button id="btn-record-clip" class="bg-red-600 hover:bg-red-500 text-white font-bold px-4 py-2 rounded-xl flex items-center space-x-2 transition shadow-lg shadow-red-600/30 disabled:opacity-40" disabled>
+                                    <i class="fa-solid fa-circle text-xs"></i>
+                                    <span id="btn-record-label">Record Clip</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Presets Container -->
+                <div id="vtab-presets" class="space-y-2.5 hidden">
+                    <div class="text-slate-300 font-medium text-xs">Select a realistic Bengaluru dashcam feed with embedded hardware GPS:</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="video-presets-container">
+                        <!-- Loaded dynamically via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Video Preview & Telemetry HUD Card -->
+                <div id="video-preview-wrapper" class="bg-slate-950/90 rounded-2xl p-4 border border-cyan-500/30 space-y-3.5 hidden shadow-2xl relative">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2 text-white font-bold">
+                            <i class="fa-solid fa-play text-cyan-400"></i>
+                            <span id="video-preview-filename" class="truncate max-w-[200px] sm:max-w-xs">Clip Selected</span>
+                        </div>
+                        <span id="video-gps-status-badge" class="px-2.5 py-0.5 rounded-lg bg-emerald-950 text-[#00f5a0] border border-emerald-600 font-mono text-[10px] flex items-center space-x-1.5 shadow-[0_0_10px_rgba(0,245,160,0.2)]">
+                            <i class="fa-solid fa-satellite"></i>
+                            <span id="video-gps-status-text">Hardware GPS Detected</span>
+                        </span>
+                    </div>
+
+                    <!-- Video Player with Reticle Overlay -->
+                    <div class="relative bg-black rounded-xl overflow-hidden border border-white/10 scanner-hud">
+                        <div class="reticle-corner-tl"></div>
+                        <div class="reticle-corner-tr"></div>
+                        <div class="reticle-corner-bl"></div>
+                        <div class="reticle-corner-br"></div>
+                        <video id="video-preview-player" controls playsinline class="w-full max-h-52 bg-black object-contain"></video>
+                        <div id="video-processing-overlay" class="video-scan-overlay hidden">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm space-y-2 text-center p-4">
+                                <div class="w-10 h-10 border-3 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+                                <div id="video-scan-step-title" class="text-white font-bold text-sm">Processing Video Feed</div>
+                                <div id="video-scan-step-desc" class="text-cyan-300 font-mono text-[11px]">Extracting hardware GPS metadata & sampling frames...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Spec Ribbon -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono">
+                        <div class="bg-slate-900/80 p-2 rounded-xl border border-white/5">
+                            <div class="text-slate-500">COORDINATES</div>
+                            <div id="hud-coords" class="text-emerald-400 font-bold truncate">12.9719°, 77.6412°</div>
+                        </div>
+                        <div class="bg-slate-900/80 p-2 rounded-xl border border-white/5">
+                            <div class="text-slate-500">LOCATION</div>
+                            <div id="hud-location" class="text-cyan-300 font-bold truncate">100 Feet Rd, Indiranagar</div>
+                        </div>
+                        <div class="bg-slate-900/80 p-2 rounded-xl border border-white/5">
+                            <div class="text-slate-500">DURATION / FPS</div>
+                            <div id="hud-duration-fps" class="text-white font-bold">3.0s • 15 fps</div>
+                        </div>
+                        <div class="bg-slate-900/80 p-2 rounded-xl border border-white/5">
+                            <div class="text-slate-500">GPS SOURCE</div>
+                            <div id="hud-gps-source" class="text-amber-400 font-bold truncate">QUICKTIME ISO 6709</div>
+                        </div>
+                    </div>
+
+                    <!-- Location Verification & Override Option -->
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-white/10 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-slate-300 font-semibold text-[11px] flex items-center space-x-1.5">
+                                <i class="fa-solid fa-location-dot text-[#00f5a0]"></i>
+                                <span>Location Alignment (Ward 154 Corridor)</span>
+                            </label>
+                            <button id="btn-use-browser-gps" class="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center space-x-1 underline font-mono">
+                                <i class="fa-solid fa-crosshairs"></i>
+                                <span>Get Current Device GPS</span>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div class="sm:col-span-2">
+                                <select id="video-corridor-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white text-xs outline-none focus:border-[#00f5a0]">
+                                    <option value="auto">Auto: Use Extracted Video Hardware GPS</option>
+                                    <option value="12.97192,77.64121">100 Feet Road (Commercial Spine)</option>
+                                    <option value="12.97852,77.64301">CMH Road (Metro Corridor)</option>
+                                    <option value="12.96112,77.63914">Domlur Junction Flyover</option>
+                                    <option value="12.97405,77.63512">12th Main Road (HAL 2nd Stage)</option>
+                                    <option value="12.96915,77.64020">8th Cross Hotspot (Blackspot BS-01)</option>
+                                    <option value="12.97720,77.63850">Defence Colony (Residential Sector)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select id="video-vehicle-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white text-xs outline-none focus:border-[#00f5a0]">
+                                    <option value="CITIZEN-CAM-01">Citizen Dashcam #01</option>
+                                    <option value="R01-BLR-SWIGGY">Swiggy Fleet (R-01)</option>
+                                    <option value="R02-BLR-ZOMATO">Zomato Courier (R-02)</option>
+                                    <option value="R03-BLR-UBER">Uber Cab Dashcam (R-03)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VLM Inspection Scene Mode Selector -->
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-white/10 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-slate-300 font-semibold text-[11px] flex items-center space-x-1.5">
+                                <i class="fa-solid fa-microchip text-[#00f5a0]"></i>
+                                <span>VLM Visual Verification Mode</span>
+                            </label>
+                            <span class="text-[10px] text-slate-400 font-mono">OpenCV & Gemini Vision</span>
+                        </div>
+                        <select id="video-category-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white text-xs outline-none focus:border-[#00f5a0]">
+                            <option value="auto">Auto: Deep Vision & Dynamic Texture Analysis</option>
+                            <option value="mixed_waste">Curbside Garbage Dump (Mixed Waste)</option>
+                            <option value="overflowing_bin">Overflowing Municipal Bin</option>
+                            <option value="construction_debris">Construction & Demolition Debris (C&D)</option>
+                            <option value="animal">Curbside Street Animal (Spam Filter Test)</option>
+                            <option value="clean_road">Clean Road / No Waste Found</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-white/10 bg-slate-950 flex justify-between items-center">
+                <button id="modal-video-cancel-btn" class="bg-slate-900 hover:bg-slate-800 text-slate-300 px-4 py-2 rounded-xl font-medium text-xs transition">
+                    Cancel
+                </button>
+                <button id="btn-ingest-video-submit" class="bg-gradient-to-r from-[#00f5a0] to-[#00d9f5] hover:opacity-90 text-slate-950 px-6 py-2.5 rounded-xl font-black text-xs transition shadow-lg shadow-emerald-500/25 flex items-center space-x-2 disabled:opacity-40" disabled>
+                    <i class="fa-solid fa-satellite-dish"></i>
+                    <span>Process & Ingest Video Feed</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JavaScript App -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

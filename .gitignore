@@ -1,0 +1,41 @@
+# Python Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Operating System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Databases & Runtime Data
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# Dynamic User Uploads & Cache
+static/uploads/*
+!static/uploads/.gitkeep
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Compiled C/C++ Binaries
+binary_search
+*.o
+*.out
+
+# Environment Variables & Secrets
+.env
+.env.*
